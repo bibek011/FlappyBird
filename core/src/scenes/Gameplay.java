@@ -1,17 +1,22 @@
 package scenes;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
+import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.viewport.StretchViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.bksapps.flappybird.GameMain;
 
+import bird.Bird;
 import helpers.GameInfo;
 
 /**
@@ -22,10 +27,14 @@ public class Gameplay implements Screen {
 
     private GameMain game;
     private OrthographicCamera mainCamera;
+    private OrthographicCamera debugCamera;
+    private Box2DDebugRenderer box2DDebugRenderer;
     private Viewport gameViewport;
 
     private Array<Sprite>backgrounds= new Array<Sprite>();
     private Array<Sprite>grounds= new Array<Sprite>();
+    private Bird bird;
+    private World world;
 
 
     public Gameplay(GameMain game){
@@ -33,8 +42,21 @@ public class Gameplay implements Screen {
         mainCamera= new OrthographicCamera(GameInfo.WIDTH, GameInfo.HEIGHT);
         mainCamera.position.set(GameInfo.WIDTH/2f, GameInfo.HEIGHT/2f, 0);
         gameViewport= new StretchViewport(GameInfo.WIDTH, GameInfo.HEIGHT, mainCamera);
+
+        debugCamera= new OrthographicCamera();
+        debugCamera.setToOrtho(false, GameInfo.WIDTH/GameInfo.PPM,
+                GameInfo.HEIGHT/GameInfo.PPM);
+        debugCamera.position.set(GameInfo.WIDTH/2f, GameInfo.HEIGHT/2f, 0);
+
+        box2DDebugRenderer= new Box2DDebugRenderer();
+
+
         createBackgrounds();
         createGrounds();
+        world= new World(new Vector2(0, -9.8f), true);
+
+        bird= new Bird(world, GameInfo.WIDTH/2f-80, GameInfo.HEIGHT/2f);
+
     }
 
     @Override
@@ -46,6 +68,7 @@ public class Gameplay implements Screen {
 
         moveBackground();
         moveGround();
+        //handleInput(delta);
     }
 
     @Override
@@ -53,10 +76,29 @@ public class Gameplay implements Screen {
         update(delta);
         Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+
         game.getBatch().begin();
+
         drawBackgrounds(game.getBatch());
+
         drawGrounds(game.getBatch());
+
+        bird.drawIdle(game.getBatch());
+
         game.getBatch().end();
+
+        box2DDebugRenderer.render(world, debugCamera.combined);
+
+        bird.updateBird();
+
+        world.step(Gdx.graphics.getDeltaTime(), 6, 2);
+
+    }
+
+    void handleInput(float dt){
+        if(Gdx.input.isButtonPressed(Input.Buttons.LEFT)){
+            bird.setPosition(bird.getX(), (bird.getY()+50f));
+        }
     }
 
     void createBackgrounds(){
