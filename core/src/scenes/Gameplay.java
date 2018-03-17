@@ -17,7 +17,9 @@ import com.badlogic.gdx.utils.viewport.Viewport;
 import com.bksapps.flappybird.GameMain;
 
 import bird.Bird;
+import ground.GroundBody;
 import helpers.GameInfo;
+import pipes.Pipes;
 
 /**
  * Created by TERRORMASTER on 3/15/2018.
@@ -34,6 +36,11 @@ public class Gameplay implements Screen {
     private Array<Sprite>backgrounds= new Array<Sprite>();
     private Array<Sprite>grounds= new Array<Sprite>();
     private Bird bird;
+    private GroundBody groundBody;
+
+    //Remove later only for testing purpose
+    private Pipes pipes;
+
     private World world;
 
 
@@ -56,6 +63,10 @@ public class Gameplay implements Screen {
         world= new World(new Vector2(0, -9.8f), true);
 
         bird= new Bird(world, GameInfo.WIDTH/2f-80, GameInfo.HEIGHT/2f);
+        groundBody= new GroundBody(world, grounds.get(0));
+
+        //Remove later only for testing purpose
+        pipes= new Pipes(world, GameInfo.WIDTH/2f);
 
     }
 
@@ -68,7 +79,7 @@ public class Gameplay implements Screen {
 
         moveBackground();
         moveGround();
-        //handleInput(delta);
+        handleInput(delta);
     }
 
     @Override
@@ -85,19 +96,25 @@ public class Gameplay implements Screen {
 
         bird.drawIdle(game.getBatch());
 
+        //Remove later
+        pipes.drawPipes(game.getBatch());
+
         game.getBatch().end();
 
         box2DDebugRenderer.render(world, debugCamera.combined);
 
         bird.updateBird();
 
+        //Remove later
+        pipes.updatePipes();
+
         world.step(Gdx.graphics.getDeltaTime(), 6, 2);
 
     }
 
     void handleInput(float dt){
-        if(Gdx.input.isButtonPressed(Input.Buttons.LEFT)){
-            bird.setPosition(bird.getX(), (bird.getY()+50f));
+        if(Gdx.input.justTouched()){
+            bird.birdFlap();
         }
     }
 
@@ -152,10 +169,6 @@ public class Gameplay implements Screen {
                 ground.setPosition(x2, ground.getY());
             }
         }
-    }
-
-    void checkBackgroundBound(){
-
     }
 
     @Override

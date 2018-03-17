@@ -33,7 +33,7 @@ public class Bird extends Sprite{
     void createBody(){
 
         BodyDef bodyDef= new BodyDef();
-        bodyDef.type= BodyDef.BodyType.StaticBody;
+        bodyDef.type= BodyDef.BodyType.DynamicBody;
         bodyDef.position.set(getX()/ GameInfo.PPM, getY()/GameInfo.PPM);
         body= world.createBody(bodyDef);
         CircleShape shape= new CircleShape();
@@ -48,8 +48,14 @@ public class Bird extends Sprite{
 
     }
 
+    public void birdFlap(){
+        body.setLinearVelocity(0,3);
+    }
+
     public void drawIdle(SpriteBatch batch){
-        batch.draw(this, getX(), getY());
+
+        batch.draw(this, getX()-getWidth()/2f, getY()-getHeight()/2f-25);
+
     }
 
     public void updateBird(){
